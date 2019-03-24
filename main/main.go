@@ -10,8 +10,9 @@ import (
 	"time"
 )
 
-var accessToken = ""
+var accessToken string
 
+// https://blog.csdn.net/u012210379/article/details/52795296
 func Dipatcher(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
@@ -31,7 +32,7 @@ func Dipatcher(w http.ResponseWriter, r *http.Request) {
 // http://xiaorui.cc/2016/03/06/%E5%85%B3%E4%BA%8Egolang-timer%E5%AE%9A%E6%97%B6%E5%99%A8%E7%9A%84%E8%AF%A6%E7%BB%86%E7%94%A8%E6%B3%95/
 func requestWxAccessToken() {
 	go func() {
-		resp, err := http.Get("https://api.weixin.qq.com/cgi-bin/template/get_industry?access_token=ACCESS_TOKEN")
+		resp, err := http.Get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx52ddb78878fa6d98&secret=44af2777f136af01accabc96bc78d9cc")
 		if err != nil {
 			panic(err)
 		}
@@ -44,7 +45,7 @@ func requestWxAccessToken() {
 }
 
 func accessTokenTask() {
-	task := time.NewTicker(2 * time.Second)
+	task := time.NewTimer(1 * time.Second)
 	select {
 	case <-task.C:
 		requestWxAccessToken()
