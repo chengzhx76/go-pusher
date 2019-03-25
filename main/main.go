@@ -28,51 +28,64 @@ func Dipatcher(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello astaxie!")
 
 }
-
-// http://xiaorui.cc/2016/03/06/%E5%85%B3%E4%BA%8Egolang-timer%E5%AE%9A%E6%97%B6%E5%99%A8%E7%9A%84%E8%AF%A6%E7%BB%86%E7%94%A8%E6%B3%95/
+// https://github.com/silenceper/wechat/blob/master/context/access_token.go
 func requestWxAccessToken() {
-	go func() {
+	accessToken := func() {
 		resp, err := http.Get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx52ddb78878fa6d98&secret=44af2777f136af01accabc96bc78d9cc")
 		if err != nil {
 			panic(err)
 		}
 		defer resp.Body.Close()
 		s, err := ioutil.ReadAll(resp.Body)
-		fmt.Printf(string(s))
+		fmt.Println(string(s))
 
 		accessToken = string(s)
-	}()
+	}
+	go accessToken()
 }
 
 func accessTokenTask() {
-	task := time.NewTimer(1 * time.Second)
-	select {
-	case <-task.C:
-		requestWxAccessToken()
+	task := time.NewTimer(2 * time.Second)
+	for {
+		select {
+		case <-task.C:
+			requestWxAccessToken()
+			task.Reset(5 * time.Second)
+		default:
+			//fmt.Println("-----default---")
+		}
 	}
 }
 
 type user struct {
 	Name string
-	sex  string
+	Sex  string
 	Age  int8
 }
 
 func main() {
 
-	zhangsan := user{
+	zhangsan := &user{
 		Name: "zhansan",
-		sex:  "1",
+		Sex:  "1",
 		Age:  12,
 	}
 
 	rs, err := json.Marshal(zhangsan)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println(rs)
 	fmt.Println(string(rs))
+	fmt.Println([]byte("{\"Name\":\"zhansan\",\"Age\":12}"))
+	zhangsan1 := &user{
+	}
+
+	json.Unmarshal(rs, zhangsan1)
+
+	fmt.Println(zhangsan1.Name)
 
 	fmt.Println("-------------------------------")
 
