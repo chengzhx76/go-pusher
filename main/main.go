@@ -28,6 +28,7 @@ func Dipatcher(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello astaxie!")
 
 }
+
 // https://github.com/silenceper/wechat/blob/master/context/access_token.go
 func requestWxAccessToken() {
 	accessToken := func() {
@@ -36,10 +37,11 @@ func requestWxAccessToken() {
 			panic(err)
 		}
 		defer resp.Body.Close()
-		s, err := ioutil.ReadAll(resp.Body)
-		fmt.Println(string(s))
+		body, err := ioutil.ReadAll(resp.Body)
+		fmt.Println(string(body))
 
-		accessToken = string(s)
+		wxAccessToken := &mode.WxAccessToken{}
+
 	}
 	go accessToken()
 }
@@ -80,8 +82,7 @@ func main() {
 	fmt.Println(rs)
 	fmt.Println(string(rs))
 	fmt.Println([]byte("{\"Name\":\"zhansan\",\"Age\":12}"))
-	zhangsan1 := &user{
-	}
+	zhangsan1 := &user{}
 
 	json.Unmarshal(rs, zhangsan1)
 
