@@ -5,7 +5,7 @@ import "container/list"
 //https://www.jianshu.com/p/970f1a8dd9cf
 type Cache struct {
 	MaxEntries int
-	list         *list.List
+	list       *list.List
 	cache      map[string]*list.Element
 }
 
@@ -19,7 +19,7 @@ type entry struct {
 func New(max int) *Cache {
 	return &Cache{
 		MaxEntries: max,
-		list:         list.New(),
+		list:       list.New(),
 		cache:      make(map[string]*list.Element),
 	}
 }
@@ -48,7 +48,7 @@ func (cache *Cache) Put(key string, value interface{}) {
 }
 
 // Get 方法获取具有指定键的缓存项
-func (cache *Cache) Get(key string) (value interface{}, ok bool)  {
+func (cache *Cache) Get(key string) (value interface{}, ok bool) {
 	if cache.cache == nil {
 		return
 	}
@@ -60,7 +60,7 @@ func (cache *Cache) Get(key string) (value interface{}, ok bool)  {
 }
 
 // Remove 方法移除具有指定键的缓存
-func (cache Cache) Remove(key string)  {
+func (cache Cache) Remove(key string) {
 	if cache.cache == nil {
 		return
 	}
@@ -70,7 +70,7 @@ func (cache Cache) Remove(key string)  {
 }
 
 // RemoveOldest 移除双向链表中访问时间最远的那一项
-func (cache *Cache) RemoveOldest()  {
+func (cache *Cache) RemoveOldest() {
 	if cache.cache == nil {
 		return
 	}
@@ -81,7 +81,7 @@ func (cache *Cache) RemoveOldest()  {
 	}
 }
 
-func (cache *Cache) removeElement(element *list.Element)  {
+func (cache *Cache) removeElement(element *list.Element) {
 	cache.list.Remove(element)
 	entry := element.Value.(*entry)
 	delete(cache.cache, entry.key)
@@ -96,7 +96,7 @@ func (cache *Cache) Len() int {
 }
 
 // Clear 清除整个Cache对象
-func (cache *Cache) Clear()  {
+func (cache *Cache) Clear() {
 	cache.list = nil
 	cache.cache = nil
 }
