@@ -8,11 +8,42 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"go-web/mode"
 )
 
 var accessToken string
 
-// https://blog.csdn.net/u012210379/article/details/52795296
+// https://github.com/silenceper/wechat/blob/master/context/access_token.go
+func requestWxAccessToken() {
+	accessToken := func() {
+		resp, err := http.Get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx52ddb78878fa6d98&secret=44af2777f136af01accabc96bc78d9cc")
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		fmt.Println(string(body))
+
+		wxAccessToken := &mode.WxAccessToken{}
+		if err = json.Unmarshal(body, wxAccessToken); err != nil {
+			accessToken = wxAccessToken.AccessToken
+		}
+	}
+	go accessToken()
+}
+
+func accessTokenTask() {
+	task := time.NewTimer(5 * time.Second)
+	for {
+		select {
+		case <-task.C:
+			requestWxAccessToken()
+			task.Reset(5 * time.Second)
+			fmt.Println("======================================================")
+		}
+	}
+}
+
 func Dipatcher(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
@@ -27,36 +58,6 @@ func Dipatcher(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "Hello astaxie!")
 
-}
-
-// https://github.com/silenceper/wechat/blob/master/context/access_token.go
-func requestWxAccessToken() {
-	accessToken := func() {
-		resp, err := http.Get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx52ddb78878fa6d98&secret=44af2777f136af01accabc96bc78d9cc")
-		if err != nil {
-			panic(err)
-		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		fmt.Println(string(body))
-
-		wxAccessToken := &mode.WxAccessToken{}
-
-	}
-	go accessToken()
-}
-
-func accessTokenTask() {
-	task := time.NewTimer(2 * time.Second)
-	for {
-		select {
-		case <-task.C:
-			requestWxAccessToken()
-			task.Reset(5 * time.Second)
-		default:
-			//fmt.Println("-----default---")
-		}
-	}
 }
 
 type user struct {
