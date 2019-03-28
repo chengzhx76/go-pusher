@@ -9,9 +9,8 @@ import (
 	"strings"
 	"time"
 	"go-web/mode"
+	"go-web/cache"
 )
-
-var accessToken string
 
 // https://github.com/silenceper/wechat/blob/master/context/access_token.go
 func requestWxAccessToken() {
@@ -27,6 +26,7 @@ func requestWxAccessToken() {
 		wxAccessToken := &mode.WxAccessToken{}
 		if err = json.Unmarshal(body, wxAccessToken); err != nil {
 			accessToken = wxAccessToken.AccessToken
+			a := &cache.Cache{}
 		}
 	}
 	go accessToken()
