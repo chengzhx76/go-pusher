@@ -26,7 +26,13 @@ func requestWxAccessToken() {
 		wxAccessToken := &mode.WxAccessToken{}
 		if err = json.Unmarshal(body, wxAccessToken); err != nil {
 			accessToken = wxAccessToken.AccessToken
-			a := &cache.Cache{}
+			cache0 := cache.NewCode(10)
+			cache0.Remove()
+			cache1 := &cache.Cache{}
+			cache1.
+			cache2 := new(cache.Cache)
+			cache3 := make(cache.Cache)
+
 		}
 	}
 	go accessToken()
