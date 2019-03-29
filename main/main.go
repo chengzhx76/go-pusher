@@ -26,7 +26,7 @@ func requestWxAccessToken() {
 		wxAccessToken := &mode.WxAccessToken{}
 		if err = json.Unmarshal(body, wxAccessToken); err != nil {
 			accessToken = wxAccessToken.AccessToken
-			cache0 := cache.NewCode(10)
+			cache0 := cache.New(10)
 			cache0.Remove()
 			cache1 := &cache.Cache{}
 			cache1.
