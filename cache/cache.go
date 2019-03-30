@@ -2,6 +2,7 @@ package cache
 
 import "container/list"
 
+//https://github.com/UncleBig/goCache/blob/master/goCache.go
 //https://www.jianshu.com/p/970f1a8dd9cf
 type Cache struct {
 	MaxEntries int
@@ -60,7 +61,7 @@ func (cache *Cache) Get(key string) (value interface{}, ok bool) {
 }
 
 // Remove 方法移除具有指定键的缓存
-func (cache Cache) Remove(key string) {
+func (cache *Cache) Remove(key string) {
 	if cache.cache == nil {
 		return
 	}
