@@ -1,16 +1,37 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"go-web/cache"
+	"go-web/web"
+	"log"
 	"net/http"
 	"strings"
 )
 
-func Dispatcher(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
+var globalCache *cache.Cache
 
-	fmt.Println(r.Form)
+func dispatcher(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		_, wErr := fmt.Fprintf(w, "server error")
+		if wErr == nil {
+			fmt.Println("error")
+		}
+		fmt.Println("error")
+		return
+	}
+
+	var response string
+	path := r.URL.Path
+	if strings.EqualFold(path, "/QRCodeTicket") {
+		response = web.QRCodeTicket(r.Form, globalCache)
+	}
+	res, _ := json.Marshal(response)
+	fmt.Fprintf(w, string(res))
+
+	/*fmt.Println(r.Form)
 	fmt.Println("path", r.URL.Path)
 	fmt.Println("scheme", r.URL.Scheme)
 	fmt.Println(r.Form["name"])
@@ -18,31 +39,22 @@ func Dispatcher(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("key:", k)
 		fmt.Println("val:", strings.Join(v, ""))
 	}
-	fmt.Fprintf(w, "Hello astaxie!")
+	fmt.Fprintf(w, "Hello astaxie!")*/
 }
 
 func main() {
-	/*task.StartAccessTokenTask()
+	globalCache = cache.New(10)
+
+	//go task.StartAccessTokenTask(globalCache)
+
+	globalCache.Put("1", "1-1-2")
+
 	//time.Sleep(time.Second * 1)
-	http.HandleFunc("/", Dispatcher)
+	http.HandleFunc("/", dispatcher)
 	requestErr := http.ListenAndServe(":9090", nil)
 	if requestErr != nil {
 		log.Fatal("error-->", requestErr)
 
-	}*/
-
-	c1 := cache.New(10)
-	c1.Put("1", "2")
-	if value, ok := c1.Get("1"); ok {
-		fmt.Print(value)
 	}
-	testCache()
-}
 
-func testCache() {
-	c1 := cache.New(10)
-	if value, ok := c1.Get("1"); ok {
-		fmt.Print("---------------")
-		fmt.Print(value)
-	}
 }
