@@ -1,19 +1,26 @@
 package web
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"go-web/cache"
-	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
-	"encoding/json"
-	"log"
-	"bytes"
+	"strings"
 )
 
-func weChatEvent(params url.Values, globalCache *cache.Cache) string {
-	return getTicket(globalCache)
+func WeChatEvent(params url.Values, globalCache *cache.Cache) string {
+
+	for k, v := range params {
+		fmt.Print(k + ":" + strings.Join(v, ""))
+		fmt.Println()
+	}
+
+	return ""
 }
+
 func QRCodeTicket(params url.Values, globalCache *cache.Cache) string {
 	return getTicket(globalCache)
 }
@@ -23,9 +30,9 @@ func getTicket(globalCache *cache.Cache) string {
 	// {"expire_seconds": 604800, "action_name": "QR_STR_SCENE", "action_info": {"scene": {"scene_str": "test"}}}
 	data := map[string]interface{}{
 		"expire_seconds": 604800,
-		"action_name": "QR_STR_SCENE",
+		"action_name":    "QR_STR_SCENE",
 		"action_info": map[string]interface{}{
-			"scene":  map[string]interface{}{
+			"scene": map[string]interface{}{
 				"scene_id": 123,
 			},
 		},
@@ -47,5 +54,5 @@ func getTicket(globalCache *cache.Cache) string {
 	log.Println(result)
 	log.Println(result["data"])
 
-	return string(result["ticket"])
+	return string(result["ticket"].(string))
 }

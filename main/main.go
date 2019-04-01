@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-web/cache"
+	"go-web/task"
 	"go-web/web"
 	"log"
 	"net/http"
 	"strings"
-	"go-web/task"
 )
 
 var globalCache *cache.Cache
@@ -25,25 +25,26 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response string
+	var response interface{}
 	path := r.URL.Path
 	path = string([]byte(path)[1:len(path)])
-	if strings.EqualFold(path, "weChatEvent") {
-		response = web.QRCodeTicket(r.Form, globalCache)
-	} else  if strings.EqualFold(path, "QRCodeTicket") {
+	if strings.EqualFold(path, "WeChatEvent") {
+		response = web.WeChatEvent(r.Form, globalCache)
+	} else if strings.EqualFold(path, "QRCodeTicket") {
 		response = web.QRCodeTicket(r.Form, globalCache)
 	}
-	var (
-		responseByte = []byte("")
-		jsonErr error
-	)
-	if response != "" {
-		responseByte, jsonErr = json.Marshal(response)
+	switch resp := response.(type) {
+	case nil:
+		fmt.Print("response is nil")
+	case string:
+		fmt.Fprintf(w, resp)
+	default:
+		responseByte, jsonErr := json.Marshal(response)
 		if jsonErr != nil {
 			fmt.Println("json marshal error")
 		}
+		fmt.Fprintf(w, string(responseByte))
 	}
-	fmt.Fprintf(w, string(responseByte))
 
 	/*fmt.Println(r.Form)
 	fmt.Println("path", r.URL.Path)
@@ -58,7 +59,6 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	globalCache = cache.New(10)
-
 
 	go task.StartAccessTokenTask(globalCache)
 
