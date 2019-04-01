@@ -1,5 +1,7 @@
 package main
 
+// http://www.cnblogs.com/txw1958/p/weixin-qrcode-with-parameters.html
+
 import (
 	"encoding/json"
 	"fmt"
@@ -8,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"go-web/task"
 )
 
 var globalCache *cache.Cache
@@ -25,12 +28,15 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 	var response string
 	path := r.URL.Path
 	path = string([]byte(path)[1:len(path)])
-	if strings.EqualFold(path, "QRCodeTicket") {
+	if strings.EqualFold(path, "weChatEvent") {
+		response = web.QRCodeTicket(r.Form, globalCache)
+	} else  if strings.EqualFold(path, "QRCodeTicket") {
 		response = web.QRCodeTicket(r.Form, globalCache)
 	}
-	var responseByte = []byte("")
-	var jsonErr error
-
+	var (
+		responseByte = []byte("")
+		jsonErr error
+	)
 	if response != "" {
 		responseByte, jsonErr = json.Marshal(response)
 		if jsonErr != nil {
@@ -53,7 +59,8 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 func main() {
 	globalCache = cache.New(10)
 
-	//go task.StartAccessTokenTask(globalCache)
+
+	go task.StartAccessTokenTask(globalCache)
 
 	globalCache.Put("1", "1-1-2")
 
