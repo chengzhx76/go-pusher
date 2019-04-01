@@ -31,7 +31,7 @@ func getTicket(globalCache *cache.Cache) string {
 		},
 	}
 	accessToken, _ := globalCache.Get("ACCESS_TOKEN")
-	var wxUrl = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=" + string(accessToken)
+	var wxUrl = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=" + accessToken.(string)
 	byteData, err := json.Marshal(data)
 	if err != nil {
 		log.Fatalln(err)
