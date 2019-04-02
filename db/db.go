@@ -1,26 +1,38 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
+	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 //https://blog.csdn.net/wangshubo1989/article/details/75257614
 
-func main() {
-	db, err := sql.Open("mysql", "root:wangshubo@/test?charset=utf8")
-	checkErr(err)
+var dataSource *sql.DB
 
+func init()  {
+	dataSource = GetDataSource()
+}
+
+func save(args map[string]interface{})  {
+	stmt, err := dataSource.Prepare("INSERT INTO openid_key(sendKey, openid) VALUES (?,?)")
+	res, err := stmt.Exec(1, args["sendKey"].(string))
+	res, err := stmt.Exec(2, args["openid"].(string))
+}
+	
+func main() {
+	//db, err := sql.Open("mysql", "root:wangshubo@/test?charset=utf8")
+	//checkErr(err)
+	GetDataSource()
 	// insert
-	stmt, err := db.Prepare("INSERT user_info SET id=?,name=?")
+	stmt, err := dataSource.Prepare("INSERT user_info SET id=?,name=?")
 	checkErr(err)
 
 	res, err := stmt.Exec(1, "wangshubo")
 	checkErr(err)
 
 	// update
-	stmt, err = db.Prepare("update user_info set name=? where id=?")
+	stmt, err = dataSource.Prepare("update user_info set name=? where id=?")
 	checkErr(err)
 
 	res, err = stmt.Exec("wangshubo_update", 1)
@@ -32,7 +44,7 @@ func main() {
 	fmt.Println(affect)
 
 	// query
-	rows, err := db.Query("SELECT * FROM user_info")
+	rows, err := dataSource.Query("SELECT * FROM user_info")
 	checkErr(err)
 
 	for rows.Next() {
@@ -46,14 +58,14 @@ func main() {
 	}
 
 	// delete
-	stmt, err = db.Prepare("delete from user_info where id=?")
+	stmt, err = dataSource.Prepare("delete from user_info where id=?")
 	checkErr(err)
 
 	res, err = stmt.Exec(1)
 	checkErr(err)
 
 	// query
-	rows, err = db.Query("SELECT * FROM user_info")
+	rows, err = dataSource.Query("SELECT * FROM user_info")
 	checkErr(err)
 
 	for rows.Next() {
@@ -66,7 +78,7 @@ func main() {
 		fmt.Println(username)
 	}
 
-	db.Close()
+	dataSource.Close()
 
 }
 

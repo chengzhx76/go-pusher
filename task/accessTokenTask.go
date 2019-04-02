@@ -17,7 +17,7 @@ type wxAccessToken struct {
 }
 
 // https://github.com/silenceper/wechat/blob/master/context/access_token.go
-func requestWxAccessToken(globalCache *cache.Cache) {
+func requestWxAccessToken() {
 	accessToken := func() {
 		resp, err := http.Get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx3d54fdd9d2b625a5&secret=311d789b595a0de31c718d5023bc56e6")
 		if err != nil {
@@ -30,6 +30,7 @@ func requestWxAccessToken(globalCache *cache.Cache) {
 		wxAccessToken := &wxAccessToken{}
 		if err = json.Unmarshal(body, wxAccessToken); err == nil {
 			accessToken := wxAccessToken.AccessToken
+			globalCache := cache.GetInstance();
 			globalCache.Put("ACCESS_TOKEN", accessToken)
 			//cache1 := &cache.Cache{}
 			//cache2 := new(cache.Cache)
@@ -38,8 +39,8 @@ func requestWxAccessToken(globalCache *cache.Cache) {
 	go accessToken()
 }
 
-func StartAccessTokenTask(globalCache *cache.Cache) {
-	requestWxAccessToken(globalCache)
+func StartAccessTokenTask() {
+	requestWxAccessToken()
 	task := time.NewTimer(time.Duration(1) * time.Hour)
 
 	/*for range task.C {
@@ -50,7 +51,7 @@ func StartAccessTokenTask(globalCache *cache.Cache) {
 	for {
 		select {
 		case <-task.C:
-			requestWxAccessToken(globalCache)
+			requestWxAccessToken()
 			task.Reset(5 * time.Second)
 		}
 	}

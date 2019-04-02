@@ -12,8 +12,6 @@ import (
 	"strings"
 )
 
-var globalCache *cache.Cache
-
 func dispatcher(w http.ResponseWriter, r *http.Request) {
 
 
@@ -29,9 +27,9 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	path = string([]byte(path)[1:len(path)])
 	if strings.EqualFold(path, "WeChatEvent") {
-		web.WeChatEvent(r, w, globalCache)
+		web.WeChatEvent(r, w)
 	} else if strings.EqualFold(path, "QRCodeTicket") {
-		web.QRCodeTicket(r, w, globalCache)
+		web.QRCodeTicket(r, w)
 	}
 	/*switch resp := response.(type) {
 	case nil:
@@ -58,11 +56,9 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	globalCache = cache.New(10)
 
-	go task.StartAccessTokenTask(globalCache)
+	go task.StartAccessTokenTask()
 
-	globalCache.Put("1", "1-1-2")
 
 	//time.Sleep(time.Second * 1)
 	http.HandleFunc("/", dispatcher)

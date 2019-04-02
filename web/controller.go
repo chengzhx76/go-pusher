@@ -11,7 +11,7 @@ import (
 	"io/ioutil"
 )
 
-func WeChatEvent(r *http.Request, w http.ResponseWriter, globalCache *cache.Cache) {
+func WeChatEvent(r *http.Request, w http.ResponseWriter) {
 
 	fmt.Println("------------BODY--------------")
 	result, _ := ioutil.ReadAll(r.Body)
@@ -32,12 +32,12 @@ func WeChatEvent(r *http.Request, w http.ResponseWriter, globalCache *cache.Cach
 	fmt.Fprint(w, "")
 }
 
-func QRCodeTicket(r *http.Request, w http.ResponseWriter, globalCache *cache.Cache) {
-	fmt.Fprint(w, getTicket(globalCache))
+func QRCodeTicket(r *http.Request, w http.ResponseWriter) {
+	fmt.Fprint(w, getTicket())
 }
 
 // http://polyglot.ninja/golang-making-http-requests/
-func getTicket(globalCache *cache.Cache) string {
+func getTicket() string {
 	// {"expire_seconds": 604800, "action_name": "QR_STR_SCENE", "action_info": {"scene": {"scene_str": "test"}}}
 	data := map[string]interface{}{
 		"expire_seconds": 604800,
@@ -48,7 +48,7 @@ func getTicket(globalCache *cache.Cache) string {
 			},
 		},
 	}
-	accessToken, _ := globalCache.Get("ACCESS_TOKEN")
+	accessToken, _ := cache.GetInstance().Get("ACCESS_TOKEN")
 	var wxUrl = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=" + accessToken.(string)
 	byteData, err := json.Marshal(data)
 	if err != nil {

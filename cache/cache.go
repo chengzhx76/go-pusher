@@ -1,7 +1,22 @@
 package cache
 
-import "container/list"
+import (
+	"container/list"
+	"sync"
+)
 
+var cache *Cache
+var once sync.Once
+
+func GetInstance() *Cache  {
+	once.Do(func() {
+		cache = New(1024)
+	})
+	return cache
+}
+
+
+//https://blog.csdn.net/qibin0506/article/details/50733314
 //https://github.com/UncleBig/goCache/blob/master/goCache.go
 //https://www.jianshu.com/p/970f1a8dd9cf
 type Cache struct {
