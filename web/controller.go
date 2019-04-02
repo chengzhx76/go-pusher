@@ -7,22 +7,33 @@ import (
 	"go-web/cache"
 	"log"
 	"net/http"
-	"net/url"
 	"strings"
+	"io/ioutil"
 )
 
-func WeChatEvent(params url.Values, globalCache *cache.Cache) string {
+func WeChatEvent(r *http.Request, w http.ResponseWriter, globalCache *cache.Cache) {
 
-	for k, v := range params {
+	fmt.Println("------------BODY--------------")
+	result, _ := ioutil.ReadAll(r.Body)
+	fmt.Println(bytes.NewBuffer(result).String())
+
+	fmt.Println("------------GET--------------")
+	for k, v := range r.Form {
 		fmt.Print(k + ":" + strings.Join(v, ""))
 		fmt.Println()
 	}
 
-	return ""
+	fmt.Println("-----------POST---------------")
+	for k, v := range r.PostForm {
+		fmt.Print(k + ":" + strings.Join(v, ""))
+		fmt.Println()
+	}
+
+	fmt.Fprint(w, "")
 }
 
-func QRCodeTicket(params url.Values, globalCache *cache.Cache) string {
-	return getTicket(globalCache)
+func QRCodeTicket(r *http.Request, w http.ResponseWriter, globalCache *cache.Cache) {
+	fmt.Fprint(w, getTicket(globalCache))
 }
 
 // http://polyglot.ninja/golang-making-http-requests/
@@ -33,7 +44,7 @@ func getTicket(globalCache *cache.Cache) string {
 		"action_name":    "QR_STR_SCENE",
 		"action_info": map[string]interface{}{
 			"scene": map[string]interface{}{
-				"scene_id": 123,
+				"scene_str": "cheng",
 			},
 		},
 	}

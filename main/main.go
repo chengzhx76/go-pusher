@@ -3,7 +3,6 @@ package main
 // http://www.cnblogs.com/txw1958/p/weixin-qrcode-with-parameters.html
 
 import (
-	"encoding/json"
 	"fmt"
 	"go-web/cache"
 	"go-web/task"
@@ -17,6 +16,7 @@ var globalCache *cache.Cache
 
 func dispatcher(w http.ResponseWriter, r *http.Request) {
 
+
 	if err := r.ParseForm(); err != nil {
 		if _, err = fmt.Fprintf(w, "server error"); err == nil {
 			fmt.Println("error")
@@ -25,15 +25,15 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response interface{}
+	//var response interface{}
 	path := r.URL.Path
 	path = string([]byte(path)[1:len(path)])
 	if strings.EqualFold(path, "WeChatEvent") {
-		response = web.WeChatEvent(r.Form, globalCache)
+		web.WeChatEvent(r, w, globalCache)
 	} else if strings.EqualFold(path, "QRCodeTicket") {
-		response = web.QRCodeTicket(r.Form, globalCache)
+		web.QRCodeTicket(r, w, globalCache)
 	}
-	switch resp := response.(type) {
+	/*switch resp := response.(type) {
 	case nil:
 		fmt.Print("response is nil")
 	case string:
@@ -44,7 +44,7 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("json marshal error")
 		}
 		fmt.Fprintf(w, string(responseByte))
-	}
+	}*/
 
 	/*fmt.Println(r.Form)
 	fmt.Println("path", r.URL.Path)
