@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"go-web/cache"
 	"go-web/task"
 	"go-web/web"
 	"log"
@@ -13,7 +12,6 @@ import (
 )
 
 func dispatcher(w http.ResponseWriter, r *http.Request) {
-
 
 	if err := r.ParseForm(); err != nil {
 		if _, err = fmt.Fprintf(w, "server error"); err == nil {
@@ -30,6 +28,8 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 		web.WeChatEvent(r, w)
 	} else if strings.EqualFold(path, "QRCodeTicket") {
 		web.QRCodeTicket(r, w)
+	} else if strings.EqualFold(path, "CheckLoginState") {
+		web.CheckLoginState(r, w)
 	}
 	/*switch resp := response.(type) {
 	case nil:
@@ -58,7 +58,6 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	go task.StartAccessTokenTask()
-
 
 	//time.Sleep(time.Second * 1)
 	http.HandleFunc("/", dispatcher)

@@ -8,13 +8,12 @@ import (
 var cache *Cache
 var once sync.Once
 
-func GetInstance() *Cache  {
+func GetInstance() *Cache {
 	once.Do(func() {
 		cache = New(1024)
 	})
 	return cache
 }
-
 
 //https://blog.csdn.net/qibin0506/article/details/50733314
 //https://github.com/UncleBig/goCache/blob/master/goCache.go
@@ -47,9 +46,9 @@ func (cache *Cache) Put(key string, value interface{}) {
 		cache.list = list.New()
 	}
 	// 如果缓存已经存在于Cache中，那么将该缓存项移到双向链表的最前端
-	if value, ok := cache.cache[key]; ok {
-		cache.list.MoveToFront(value)
-		value.Value.(*entry).value = value
+	if element, ok := cache.cache[key]; ok {
+		cache.list.MoveToFront(element)
+		element.Value.(*entry).value = value
 		return
 	}
 

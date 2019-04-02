@@ -1,29 +1,41 @@
 package db
 
 import (
-	"fmt"
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"sync"
 )
 
 //https://blog.csdn.net/wangshubo1989/article/details/75257614
 
 var dataSource *sql.DB
+var once sync.Once
 
-func init()  {
-	dataSource = GetDataSource()
+func init() {
+	var err error
+	once.Do(func() {
+		dataSource, err = sql.Open("mysql", "root:wangshubo@/test?charset=utf8")
+	})
+	if err != nil {
+		fmt.Println("get db error")
+	}
+	defer dataSource.Close()
 }
 
-func save(args map[string]interface{})  {
-	stmt, err := dataSource.Prepare("INSERT INTO openid_key(sendKey, openid) VALUES (?,?)")
-	res, err := stmt.Exec(1, args["sendKey"].(string))
-	res, err := stmt.Exec(2, args["openid"].(string))
+func saveOpenidAndKey(args map[string]interface{}) {
+	stmt, _ := dataSource.Prepare("INSERT INTO openid_key(sendKey, openid) VALUES (?,?)")
+	res, _ := stmt.Exec(args["sendKey"].(string), args["openid"].(string))
+	fmt.Println(res.LastInsertId())
 }
-	
+
+func loadByOpenid(openid string) {
+
+}
+
 func main() {
 	//db, err := sql.Open("mysql", "root:wangshubo@/test?charset=utf8")
 	//checkErr(err)
-	GetDataSource()
 	// insert
 	stmt, err := dataSource.Prepare("INSERT user_info SET id=?,name=?")
 	checkErr(err)
