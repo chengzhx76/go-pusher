@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"go-web/db"
 )
 
 func WeChatEvent(r *http.Request, w http.ResponseWriter) {
@@ -26,10 +27,15 @@ func WeChatEvent(r *http.Request, w http.ResponseWriter) {
 		wxEventMsg := mode.WxScanEvent{}
 		xml.Unmarshal(result, &wxEventMsg)
 		if wxEventMsg.Event == "SCAN" {
-			randomStr := wxEventMsg.EventKey
-			cache.GetInstance().Put(randomStr, 1)
-
-			fmt.Println(randomStr)
+			sendKey := wxEventMsg.EventKey
+			cache.GetInstance().Put(sendKey, 1)
+			// 先查询有没有该用户
+			loadSendKey := db.LoadByOpenid(wxEventMsg.FromUserName)
+			if loadSendKey == "" {
+				// 入库
+				db.SaveOpenidAndKey(sendKey, wxEventMsg.FromUserName)
+			}
+			fmt.Println(sendKey)
 		}
 	} else if wxMsg.MsgType == "text" {
 		fmt.Println("text")
@@ -56,7 +62,7 @@ func QRCodeTicket(r *http.Request, w http.ResponseWriter) {
 func CheckLoginState(r *http.Request, w http.ResponseWriter) {
 	loginToken := r.Form["loginToken"][0]
 	if loginState, ok := cache.GetInstance().Get(loginToken); ok {
-
+		cache.GetInstance().Remove(loginToken)
 		fmt.Fprint(w, loginState.(int))
 	} else {
 		fmt.Fprint(w, 0)
@@ -66,15 +72,15 @@ func CheckLoginState(r *http.Request, w http.ResponseWriter) {
 // http://polyglot.ninja/golang-making-http-requests/
 func getTicket() string {
 	// {"expire_seconds": 604800, "action_name": "QR_STR_SCENE", "action_info": {"scene": {"scene_str": "test"}}}
-	randomStr := util.RandString(16)
-	cache.GetInstance().Put(randomStr, 0)
-	fmt.Println(randomStr)
+	sendKey := util.RandString(16)
+	cache.GetInstance().Put(sendKey, 0)
+	fmt.Println(sendKey)
 	data := map[string]interface{}{
 		"expire_seconds": 604800,
 		"action_name":    "QR_STR_SCENE",
 		"action_info": map[string]interface{}{
 			"scene": map[string]interface{}{
-				"scene_str": randomStr,
+				"scene_str": sendKey,
 			},
 		},
 	}
@@ -95,5 +101,5 @@ func getTicket() string {
 	log.Println(result)
 	log.Println(result["data"])
 
-	return string(result["ticket"].(string)) + "|" + randomStr
+	return string(result["ticket"].(string)) + "|" + sendKey
 }

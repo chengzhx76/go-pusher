@@ -8,6 +8,7 @@ import (
 )
 
 //https://blog.csdn.net/wangshubo1989/article/details/75257614
+//http://go-database-sql.org/retrieving.html
 
 var dataSource *sql.DB
 var once sync.Once
@@ -15,7 +16,7 @@ var once sync.Once
 func init() {
 	var err error
 	once.Do(func() {
-		dataSource, err = sql.Open("mysql", "root:wangshubo@/test?charset=utf8")
+		dataSource, err = sql.Open("mysql", "pusher:pusher#cheng@/pusher?charset=utf8")
 	})
 	if err != nil {
 		fmt.Println("get db error")
@@ -23,14 +24,16 @@ func init() {
 	defer dataSource.Close()
 }
 
-func saveOpenidAndKey(args map[string]interface{}) {
+func SaveOpenidAndKey(sendKey string, openid string) {
 	stmt, _ := dataSource.Prepare("INSERT INTO openid_key(sendKey, openid) VALUES (?,?)")
-	res, _ := stmt.Exec(args["sendKey"].(string), args["openid"].(string))
+	res, _ := stmt.Exec(sendKey, openid)
 	fmt.Println(res.LastInsertId())
 }
 
-func loadByOpenid(openid string) {
-
+func LoadByOpenid(openid string) string {
+	var sendKey string
+	dataSource.QueryRow("SELECT sendKey FROM openid_key WHERE=?", openid).Scan(&sendKey)
+	return sendKey
 }
 
 func main() {
