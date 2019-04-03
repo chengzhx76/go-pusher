@@ -28,13 +28,17 @@ func WeChatEvent(r *http.Request, w http.ResponseWriter) {
 		xml.Unmarshal(result, &wxEventMsg)
 		if wxEventMsg.Event == "SCAN" {
 			sendKey := wxEventMsg.EventKey
-			cache.GetInstance().Put(sendKey, 1)
+			var uid string
 			// 先查询有没有该用户
-			loadSendKey := db.LoadByOpenid(wxEventMsg.FromUserName)
-			if loadSendKey == "" {
+			user, _ := db.LoadByOpenid(wxEventMsg.FromUserName)
+			if user == nil {
 				// 入库
-				db.SaveOpenidAndKey(sendKey, wxEventMsg.FromUserName)
+				uid = util.RandString(16)
+				db.SaveUser(uid, sendKey, wxEventMsg.FromUserName)
+			} else {
+				uid = user.Uid
 			}
+			cache.GetInstance().Put(sendKey, uid)
 			fmt.Println(sendKey)
 		}
 	} else if wxMsg.MsgType == "text" {
@@ -59,21 +63,39 @@ func WeChatEvent(r *http.Request, w http.ResponseWriter) {
 func QRCodeTicket(r *http.Request, w http.ResponseWriter) {
 	fmt.Fprint(w, getTicket())
 }
+
 func CheckLoginState(r *http.Request, w http.ResponseWriter) {
 	loginToken := r.Form["loginToken"][0]
-	if loginState, ok := cache.GetInstance().Get(loginToken); ok {
+	if uid, ok := cache.GetInstance().Get(loginToken); ok {
 		cache.GetInstance().Remove(loginToken)
-		fmt.Fprint(w, loginState.(int))
+		fmt.Fprint(w, uid.(string))
 	} else {
-		fmt.Fprint(w, 0)
+		fmt.Fprint(w, "")
 	}
+}
+func Subscription(r *http.Request, w http.ResponseWriter) {
+	sendkey := r.Form["sendkey"][0]
+	text := r.Form["text"][0]
+	desp := r.Form["desp"][0]
+	fmt.Println(sendkey, text, desp)
+
+	fmt.Fprint(w, sendkey, text, desp)
+
+}
+
+func Login(r *http.Request, w http.ResponseWriter) {
+	uid := r.Form["uid"][0]
+	fmt.Println(uid)
+
+	fmt.Fprint(w, uid)
+
 }
 
 // http://polyglot.ninja/golang-making-http-requests/
 func getTicket() string {
 	// {"expire_seconds": 604800, "action_name": "QR_STR_SCENE", "action_info": {"scene": {"scene_str": "test"}}}
 	sendKey := util.RandString(16)
-	cache.GetInstance().Put(sendKey, 0)
+	cache.GetInstance().Put(sendKey, "")
 	fmt.Println(sendKey)
 	data := map[string]interface{}{
 		"expire_seconds": 604800,

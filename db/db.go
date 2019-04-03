@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"sync"
+	"go-web/mode"
 )
 
 //https://blog.csdn.net/wangshubo1989/article/details/75257614
@@ -16,24 +17,28 @@ var once sync.Once
 func init() {
 	var err error
 	once.Do(func() {
-		dataSource, err = sql.Open("mysql", "pusher:pusher#cheng@/pusher?charset=utf8")
+		dataSource, err = sql.Open("mysql", "pusher:pusher#cheng@tcp(139.196.35.134:3306)/pusher?charset=utf8")
 	})
 	if err != nil {
 		fmt.Println("get db error")
 	}
-	defer dataSource.Close()
+	//defer dataSource.Close()
 }
 
-func SaveOpenidAndKey(sendKey string, openid string) {
-	stmt, _ := dataSource.Prepare("INSERT INTO openid_key(sendKey, openid) VALUES (?,?)")
-	res, _ := stmt.Exec(sendKey, openid)
+func SaveUser(uid string, sendKey string, openid string) {
+	stmt, _ := dataSource.Prepare("INSERT INTO user(uid, sendKey, openid) VALUES (?,?,?)")
+	res, _ := stmt.Exec(uid, sendKey, openid)
 	fmt.Println(res.LastInsertId())
 }
 
-func LoadByOpenid(openid string) string {
-	var sendKey string
-	dataSource.QueryRow("SELECT sendKey FROM openid_key WHERE=?", openid).Scan(&sendKey)
-	return sendKey
+func LoadByOpenid(openid string) (*mode.User, error) {
+	var user mode.User
+	err := dataSource.QueryRow("SELECT uid, sendKey FROM user WHERE=?", openid).Scan(&user.Uid, &user.SendKey)
+	if err != nil {
+		return nil, err
+	} else {
+		return &user, nil
+	}
 }
 
 func main() {

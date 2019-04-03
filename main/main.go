@@ -30,6 +30,10 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 		web.QRCodeTicket(r, w)
 	} else if strings.EqualFold(path, "CheckLoginState") {
 		web.CheckLoginState(r, w)
+	} else if strings.EqualFold(path, "Login") {
+		web.Login(r, w)
+	} else if strings.EqualFold(path, "Sub") {
+		web.Subscription(r, w)
 	}
 	/*switch resp := response.(type) {
 	case nil:

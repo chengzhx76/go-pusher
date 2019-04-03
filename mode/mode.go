@@ -1,7 +1,7 @@
 package mode
 
-type user struct {
-	uid string
-	openid string
-	sendKey string
+type User struct {
+	Uid string
+	Openid string
+	SendKey string
 }
