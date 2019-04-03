@@ -53,3 +53,20 @@ type WxTextEvent struct {
 	Content string `xml:"Content"`
 	MsgId   string `xml:"MsgId"`
 }
+
+type PushMessage struct {
+	touser      string
+	template_id string
+	url         string
+	data        PushMessageData
+}
+
+type PushMessageData struct {
+	title PushMessageDataValue
+	text  PushMessageDataValue
+	desc  PushMessageDataValue
+}
+
+type PushMessageDataValue struct {
+	value string
+}

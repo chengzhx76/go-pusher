@@ -6,13 +6,13 @@ import (
 	"encoding/xml"
 	"fmt"
 	"go-web/cache"
+	"go-web/db"
 	"go-web/mode"
 	"go-web/util"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
-	"go-web/db"
 )
 
 func WeChatEvent(r *http.Request, w http.ResponseWriter) {
@@ -73,13 +73,17 @@ func CheckLoginState(r *http.Request, w http.ResponseWriter) {
 		fmt.Fprint(w, "")
 	}
 }
+
 func Subscription(r *http.Request, w http.ResponseWriter) {
 	sendkey := r.Form["sendkey"][0]
+	title := r.Form["title"][0]
 	text := r.Form["text"][0]
-	desp := r.Form["desp"][0]
-	fmt.Println(sendkey, text, desp)
+	desc := r.Form["desc"][0]
+	fmt.Println(sendkey, title, desc)
 
-	fmt.Fprint(w, sendkey, text, desp)
+	sendMsg(sendkey, title, text, desc)
+
+	fmt.Fprint(w, sendkey, title, desc)
 
 }
 
@@ -124,4 +128,49 @@ func getTicket() string {
 	log.Println(result["data"])
 
 	return string(result["ticket"].(string)) + "|" + sendKey
+}
+
+func sendMsg(sendKey string, title string, text string, desc string) {
+
+	var openid string
+	user, _ := db.LoadBySendKey(sendKey)
+	if user != nil {
+		openid = user.Openid
+	} else {
+		log.Fatalln("未查到该用户 " + sendKey)
+		return
+	}
+
+	pushMsg := func() {
+		accessToken, _ := cache.GetInstance().Get("ACCESS_TOKEN")
+		var wxUrl = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + accessToken.(string)
+		data := map[string]interface{}{
+			"touser":      openid,
+			"template_id": "-q_wGCsJ0g8NUK93t5IvXyyTO8S5XUbbndJHJlJWm5Q",
+			"data": map[string]interface{}{
+				"title": map[string]interface{}{
+					"value": title,
+				},
+				"text": map[string]interface{}{
+					"value": text,
+				},
+				"desc": map[string]interface{}{
+					"value": desc,
+				},
+			},
+		}
+		byteData, err := json.Marshal(data)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		resp, err := http.Post(wxUrl, "application/json", bytes.NewBuffer(byteData))
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		fmt.Println(string(body))
+	}
+	go pushMsg()
 }

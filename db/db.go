@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"sync"
 	"go-web/mode"
+	"sync"
 )
 
 //https://blog.csdn.net/wangshubo1989/article/details/75257614
@@ -34,6 +34,16 @@ func SaveUser(uid string, sendKey string, openid string) {
 func LoadByOpenid(openid string) (*mode.User, error) {
 	var user mode.User
 	err := dataSource.QueryRow("SELECT uid, sendKey FROM user WHERE=?", openid).Scan(&user.Uid, &user.SendKey)
+	if err != nil {
+		return nil, err
+	} else {
+		return &user, nil
+	}
+}
+
+func LoadBySendKey(sendKey string) (*mode.User, error) {
+	var user mode.User
+	err := dataSource.QueryRow("SELECT uid, openid FROM user WHERE=?", sendKey).Scan(&user.Uid, &user.Openid)
 	if err != nil {
 		return nil, err
 	} else {
