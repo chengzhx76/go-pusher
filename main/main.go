@@ -35,6 +35,9 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 	} else if strings.EqualFold(path, "Sub") {
 		web.Subscription(r, w)
 	}
+
+	// TODO 返回Josn
+
 	/*switch resp := response.(type) {
 	case nil:
 		fmt.Print("response is nil")
