@@ -64,11 +64,13 @@ func dispatcher(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
+	const addr = ":9090"
+
 	go task.StartAccessTokenTask()
 
 	//time.Sleep(time.Second * 1)
 	http.HandleFunc("/", dispatcher)
-	requestErr := http.ListenAndServe(":9090", nil)
+	requestErr := http.ListenAndServe(addr, nil)
 	if requestErr != nil {
 		log.Fatal("error-->", requestErr)
 	}
