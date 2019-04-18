@@ -14,7 +14,7 @@ func TestRest(t *testing.T) {
 	router.HandleFunc("/todos", TodoIndex)
 	router.HandleFunc("/todos/{todoId}", TodoShow)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":9090", router))
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
